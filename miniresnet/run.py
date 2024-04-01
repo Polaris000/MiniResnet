@@ -9,18 +9,20 @@ import torchvision.transforms as transforms
 from model import MiniResNet, get_optimizers
 from process import load_data
 
+import torchsummary
+
 import os
 
 
-def train(model, train_loader, test_loader, epochs, criterion, optimizer, scheduler):
+def train(model, train_loader, test_loader, epochs, criterion, optimizer, scheduler, device):
     train_loss_history = []
     train_acc_history = []
     test_loss_history = []
     test_acc_history = []
 
     for epoch in epochs:
-        train_loss, train_correct, train_total = train_epoch(model, criterion, optimizer)
-        test_loss, test_correct, test_total = test(model, criterion, optimizer)
+        train_loss, train_correct, train_total = train_epoch(model, criterion, optimizer, device)
+        test_loss, test_correct, test_total = test(model, criterion, optimizer, device)
 
         train_loss = train_loss / len(train_loader)
         test_loss = test_loss / len(test_loader)
@@ -43,24 +45,27 @@ def train(model, train_loader, test_loader, epochs, criterion, optimizer, schedu
 
 
 def main():
-    train_loader, test_loader = load_data()
-
+    INPUT_DIM = (3, 32, 32)
+    train_loader, test_loader = load_data(INPUT_DIM)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     model = MiniResNet()
     model = model.to(device)
+    print(torchsummary.summary(model, INPUT_DIM))
+
+    assert round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6, 2) <= 5, "Model Size excedes limit."
 
     criterion, optimizer, scheduler = get_optimizers()
-    train(model, train_loader, test_loader, epochs, criterion, optimizer, scheduler)
+    train(model, train_loader, test_loader, epochs, criterion, optimizer, scheduler, device)
 
-    test_loss, test_correct, test_total = test(model, test_loader, epochs, criterion, optimizer)
+    test_loss, test_correct, test_total = test(model, test_loader, epochs, criterion, optimizer, device)
 
     test_acc = test_correct / test_total
     print("Test Accuracy: {test_acc}")
 
 
 
-def train_epoch(model, train_loader, criterion, optimizer):
+def train_epoch(model, train_loader, criterion, optimizer, device):
     model.train()
     train_loss = 0
     correct = 0
@@ -82,7 +87,7 @@ def train_epoch(model, train_loader, criterion, optimizer):
     return train_loss, correct, total
 
 
-def test(model, test_loader, criterion, optimizer):
+def test(model, test_loader, criterion, optimizer, device):
     model.eval()
     test_loss = 0
     correct = 0
