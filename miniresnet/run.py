@@ -40,7 +40,7 @@ def train(model, train_loader, test_loader, epochs, criterion, optimizer, schedu
         scheduler.step()
 
     if not os.path.isdir('checkpoint'):
-            os.mkdir('checkpoint')
+        os.mkdir('checkpoint')
         torch.save(state, './checkpoint/ckpt.pth')
 
 
