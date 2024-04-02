@@ -26,8 +26,8 @@ trainloader, testloader, classes = load_data()
 def augment_data():
 
     transform_train = transforms.Compose([
-        transforms.RandomVerticalFlip(),
-        # transforms.RandomHorizontalFlip(),
+        # transforms.RandomVerticalFlip(),
+        transforms.RandomHorizontalFlip(),
         transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
         transforms.RandomCrop(32, padding=4),
         transforms.ToTensor(),
