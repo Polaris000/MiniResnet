@@ -3,6 +3,7 @@ import torch
 from model import MiniResNet, get_optimizers
 from process import load_data
 
+import torchsummary
 
 import os
 
@@ -61,15 +62,19 @@ def main():
 
     model = MiniResNet(num_blocks=[1, 1, 1, 1])
     model = model.to(DEVICE)
-    # print(
-    #     torchsummary.summary(model, INPUT_DIM),
-    #     device=DEVICE if DEVICE != "mps" else None,
-    # )
 
-    # assert (
-    #     round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6, 2)
-    #     <= 5
-    # ), "Model Size excedes limit."
+    if DEVICE == "mps":
+        raise NotImplementedError("MPS not supported by torchsummary.")
+
+    print(
+        torchsummary.summary(model, INPUT_DIM),
+        device=DEVICE,
+    )
+
+    assert (
+        round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6, 2)
+        <= 5
+    ), "Model Size excedes limit."
 
     criterion, optimizer, scheduler = get_optimizers(model)
 
