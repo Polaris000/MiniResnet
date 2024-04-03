@@ -50,12 +50,12 @@ def load_data(input_dim=(3, 32, 32)):
         val_set, batch_size=100, shuffle=False, num_workers=2
     )
 
-    testset = TestData(file_path=test_path, transform=transform_val_test)
+    test_set = TestData(file_path=test_path, transform=transform_val_test)
     testloader = torch.utils.data.DataLoader(
-        val_set, batch_size=100, shuffle=False, num_workers=2
+        test_set, batch_size=100, shuffle=False, num_workers=2
     )
 
-    print(testset)
+  
 
     classes = (
         "plane",

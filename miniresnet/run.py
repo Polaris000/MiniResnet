@@ -6,6 +6,8 @@ from process import load_data
 import torchsummary
 import warnings
 
+import pandas as pd
+
 import os
 
 
@@ -101,6 +103,9 @@ def main():
     test_acc = test_correct / test_total
     print(f"Test Accuracy: {test_acc}")
 
+    results = infer(model, test_loader.dataset, criterion, DEVICE)
+    print(results)
+
 
 def train_epoch(model, train_loader, criterion, optimizer, device):
     model.train()
@@ -142,6 +147,20 @@ def test(model, test_loader, criterion, device):
             correct += predicted.eq(targets).sum().item()
 
     return test_loss, correct, total
+
+def infer(model, testdataset, criterion, device):
+    model.eval()
+
+    results = []
+
+    for idx, (id,image) in enumerate(testdataset):
+        image = image.unsqueeze(0).to(device)
+        output = model(image)
+        _, predicted = torch.max(output, 1)
+        predicted_class = criterion[predicted.item()]
+        results.append({'ImageId': idx+1, 'Label': predicted_class})
+
+    return pd.DataFrame(results)
 
 
 if __name__ == "__main__":
