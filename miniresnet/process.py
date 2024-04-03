@@ -55,8 +55,6 @@ def load_data(input_dim=(3, 32, 32)):
         test_set, batch_size=100, shuffle=False, num_workers=2
     )
 
-  
-
     classes = (
         "plane",
         "car",

@@ -148,17 +148,18 @@ def test(model, test_loader, criterion, device):
 
     return test_loss, correct, total
 
-def infer(model, testdataset, criterion, device):
+
+def infer(model, test_loader, criterion, device):
     model.eval()
 
     results = []
 
-    for idx, (id,image) in enumerate(testdataset):
+    for idx, (id, image) in enumerate(test_loader):
         image = image.unsqueeze(0).to(device)
         output = model(image)
         _, predicted = torch.max(output, 1)
         predicted_class = criterion[predicted.item()]
-        results.append({'ImageId': idx+1, 'Label': predicted_class})
+        results.append({"ImageId": idx + 1, "Label": predicted_class})
 
     return pd.DataFrame(results)
 
