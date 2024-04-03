@@ -4,6 +4,7 @@ from model import MiniResNet, get_optimizers
 from process import load_data
 
 import torchsummary
+import warnings
 
 import os
 
@@ -21,7 +22,7 @@ def train(
             model, train_loader, criterion, optimizer, device
         )
         test_loss, test_correct, test_total = test(
-            model, test_loader, criterion, optimizer, device
+            model, test_loader, criterion, device
         )
 
         train_loss = train_loss / len(train_loader)
@@ -37,7 +38,7 @@ def train(
         test_acc_history.append(test_acc)
 
         print(
-            f"Epoch {epoch}, Train loss {train_loss}, Test loss {test_loss}, Train Accuracy: {train_acc}, Test Accuracy: {test_acc}"
+            f"Epoch {epoch:.3f}, Train loss {train_loss:.3f}, Test loss {test_loss:.3f}, Train Accuracy: {train_acc:.3f}, Test Accuracy: {test_acc:.3f}"
         )
         scheduler.step()
 
@@ -55,7 +56,7 @@ def train(
 
 def main():
     INPUT_DIM = (3, 32, 32)
-    EPOCHS = 10
+    EPOCHS = 30
     DEVICE = "mps"
 
     train_loader, val_loader, test_loader, _ = load_data(INPUT_DIM)
@@ -64,12 +65,13 @@ def main():
     model = model.to(DEVICE)
 
     if DEVICE == "mps":
-        raise NotImplementedError("MPS not supported by torchsummary.")
+        warnings.warn("MPS not supported by torchsummary.")
 
-    print(
-        torchsummary.summary(model, INPUT_DIM),
-        device=DEVICE,
-    )
+    else:
+        print(
+            torchsummary.summary(model, INPUT_DIM),
+            device=DEVICE,
+        )
 
     assert (
         round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6, 2)
@@ -89,16 +91,12 @@ def main():
         DEVICE,
     )
 
-    valid_loss, valid_correct, valid_total = test(
-        model, val_loader, EPOCHS, criterion, optimizer, DEVICE
-    )
+    valid_loss, valid_correct, valid_total = test(model, val_loader, criterion, DEVICE)
 
     valid_acc = valid_correct / valid_total
     print(f"Valid Accuracy: {valid_acc}")
 
-    test_loss, test_correct, test_total = test(
-        model, test_loader, EPOCHS, criterion, optimizer, DEVICE
-    )
+    test_loss, test_correct, test_total = test(model, test_loader, criterion, DEVICE)
 
     test_acc = test_correct / test_total
     print(f"Test Accuracy: {test_acc}")
@@ -126,7 +124,7 @@ def train_epoch(model, train_loader, criterion, optimizer, device):
     return train_loss, correct, total
 
 
-def test(model, test_loader, criterion, optimizer, device):
+def test(model, test_loader, criterion, device):
     model.eval()
     test_loss = 0
     correct = 0
