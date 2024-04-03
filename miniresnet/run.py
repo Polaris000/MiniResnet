@@ -113,7 +113,7 @@ def main():
     print(f"Test Accuracy: {test_acc}")
 
     results = infer(model, test_loader.dataset, criterion, DEVICE)
-    print(results)
+    results.to_csv("../data/results/results.csv", index=False)
 
 
 def main_test():
