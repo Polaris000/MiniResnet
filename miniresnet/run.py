@@ -116,6 +116,18 @@ def main():
     print(results)
 
 
+def main_test():
+    DEVICE = "mps"
+
+    model = load_model(DEVICE)
+    _, _, test_loader, _ = load_data((3, 32, 32))
+    criterion, _, _, _ = get_optimizers(model)
+
+    results = infer(model, test_loader, criterion, DEVICE)
+
+    results.to_csv("results.csv", index=False)
+
+
 def train_epoch(model, train_loader, criterion, optimizer, device):
     model.train()
     train_loss = 0
@@ -159,26 +171,27 @@ def test(model, test_loader, criterion, device):
 
 
 def infer(model, test_loader, criterion, device):
+    print(len(test_loader))
     model.eval()
 
     results = []
 
-    for idx, (id, image) in enumerate(test_loader):
-        image = image.unsqueeze(0).to(device)
+    for _, (id_, image) in enumerate(test_loader):
+        image = image.to(device)
         output = model(image)
-        _, predicted = torch.max(output, 1)
-        predicted_class = criterion[predicted.item()]
-        results.append({"ImageId": idx + 1, "Label": predicted_class})
+        _, predicted = output.max(1)
+        results.append({"ID": id_.item(), "Labels": predicted.item()})
 
     return pd.DataFrame(results)
 
 
-def load_model():
+def load_model(DEVICE):
     model = MiniResNet(num_blocks=[1, 1, 1, 1])
     model.load_state_dict(torch.load("./checkpoint/ckpt.pth")["state_dict"])
+    model = model.to(DEVICE)
     model.eval()
     return model
 
 
 if __name__ == "__main__":
-    main()
+    main_test()
