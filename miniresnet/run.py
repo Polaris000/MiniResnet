@@ -93,7 +93,7 @@ def main():
     train(
         model,
         train_loader,
-        test_loader,
+        val_loader,
         EPOCHS,
         criterion,
         optimizer,
