@@ -10,22 +10,25 @@ class TestData(torch.utils.data.Dataset):
         self.data = None
         with open(file_path, "rb") as f:
             self.data = pickle.load(f)
+            self.images = self.data[b"data"]
+            self.ids = self.data[b"ids"]
         self.transform = transform
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, index):
-        img = self.data[index]["image"]
-        target = self.data[index]["target"]
+        img = self.images[index]["image"]
+        id = self.ids[index]["target"]
 
         # Convert image to PIL Image
+        img = img.reshape(3, 32, 32).transpose(1, 2, 0)
         img = Image.fromarray(img)
 
         if self.transform is not None:
             img = self.transform(img)
 
-        return img, target
+        return id, img
 
 
 def load_data(input_dim=(3, 32, 32)):
