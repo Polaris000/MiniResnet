@@ -8,7 +8,7 @@ from PIL import Image
 class TestData(torch.utils.data.Dataset):
     def __init__(self, file_path, transform=None):
         self.data = None
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             self.data = pickle.load(f)
         self.transform = transform
 
@@ -16,8 +16,8 @@ class TestData(torch.utils.data.Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        img = self.data[index]['image']
-        target = self.data[index]['target']
+        img = self.data[index]["image"]
+        target = self.data[index]["target"]
 
         # Convert image to PIL Image
         img = Image.fromarray(img)
@@ -28,45 +28,69 @@ class TestData(torch.utils.data.Dataset):
         return img, target
 
 
-def load_data():
-
+def load_data(input_dim=(3, 32, 32)):
     import os
 
-    current_directory = os.getcwd()
-    test_path= os.path.join(current_directory, "data", "testdata", "cifar_test_nolabels.pkl")
+    data_directory = os.path.dirname(__file__) + "/../data"
+    test_path = os.path.join(data_directory, "testdata", "cifar_test_nolabels.pkl")
 
-    transform_train, transform_val_test = augment_data()
-    
-    trainset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=2)
-    
-    valset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_val_test)
-    valloader = torch.utils.data.DataLoader(valset, batch_size=100, shuffle=False, num_workers=2)
+    transform_train, transform_val_test = augment_data(input_dim)
 
-    testset =  TestData(file_path=test_path, transform=transform_val_test)
-    testloader = torch.utils.data.DataLoader(valset, batch_size=100, shuffle=False, num_workers=2)
+    trainset = datasets.CIFAR10(
+        root=data_directory, train=True, download=True, transform=transform_train
+    )
+    trainloader = torch.utils.data.DataLoader(
+        trainset, batch_size=128, shuffle=True, num_workers=2
+    )
+
+    val_set = datasets.CIFAR10(
+        root=data_directory, train=False, download=True, transform=transform_val_test
+    )
+    val_loader = torch.utils.data.DataLoader(
+        val_set, batch_size=100, shuffle=False, num_workers=2
+    )
+
+    testset = TestData(file_path=test_path, transform=transform_val_test)
+    testloader = torch.utils.data.DataLoader(
+        val_set, batch_size=100, shuffle=False, num_workers=2
+    )
 
     print(testset)
 
-    classes = ('plane', 'car', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck')
-    
-    return trainloader,valloader, testloader, classes
+    classes = (
+        "plane",
+        "car",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck",
+    )
+
+    return trainloader, val_loader, testloader, classes
 
 
-def augment_data():
+def augment_data(input_dim=(3, 32, 32)):
+    transform_train = transforms.Compose(
+        [
+            # transforms.RandomVerticalFlip(),
+            transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(
+                brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1
+            ),
+            transforms.RandomCrop(input_dim[1], padding=4),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ]
+    )
 
-    transform_train = transforms.Compose([
-        #transforms.RandomVerticalFlip(),
-        transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
-        transforms.RandomCrop(32, padding=4),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-    ])
-
-    transform_val_test = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-    ])
+    transform_val_test = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ]
+    )
     return transform_train, transform_val_test
-
