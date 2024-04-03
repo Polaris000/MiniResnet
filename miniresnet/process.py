@@ -15,11 +15,11 @@ class TestData(torch.utils.data.Dataset):
         self.transform = transform
 
     def __len__(self):
-        return len(self.data)
+        return len(self.ids)
 
     def __getitem__(self, index):
-        img = self.images[index]["image"]
-        id = self.ids[index]["target"]
+        img = self.images[index]
+        id_ = self.ids[index]
 
         # Convert image to PIL Image
         img = img.reshape(3, 32, 32).transpose(1, 2, 0)
@@ -28,7 +28,7 @@ class TestData(torch.utils.data.Dataset):
         if self.transform is not None:
             img = self.transform(img)
 
-        return id, img
+        return id_, img
 
 
 def load_data(input_dim=(3, 32, 32)):
@@ -55,7 +55,7 @@ def load_data(input_dim=(3, 32, 32)):
 
     test_set = TestData(file_path=test_path, transform=transform_val_test)
     testloader = torch.utils.data.DataLoader(
-        test_set, batch_size=100, shuffle=False, num_workers=2
+        test_set, batch_size=1, shuffle=False, num_workers=2
     )
 
     classes = (
