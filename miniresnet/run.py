@@ -12,7 +12,15 @@ import os
 
 
 def train(
-    model, train_loader, test_loader, epochs, criterion, optimizer, scheduler, device
+    model,
+    train_loader,
+    test_loader,
+    epochs,
+    criterion,
+    optimizer,
+    scheduler,
+    early_stopper,
+    device,
 ):
     train_loss_history = []
     train_acc_history = []
@@ -40,11 +48,11 @@ def train(
         test_acc_history.append(test_acc)
 
         print(
-            f"Epoch {epoch:.3f}, Train loss {train_loss:.3f}, Test loss {test_loss:.3f}, Train Accuracy: {train_acc:.3f}, Test Accuracy: {test_acc:.3f}"
+            f"Epoch {epoch + 1}, Train loss {train_loss:.3f}, Test loss {test_loss:.3f}, Train Accuracy: {train_acc:.3f}, Test Accuracy: {test_acc:.3f}"
         )
         scheduler.step()
 
-        if epoch % 10 == 0:
+        if (epoch % 10 == 0) or early_stopper.early_stop(test_loss):
             state = {
                 "epoch": epoch,
                 "state_dict": model.state_dict(),
@@ -80,7 +88,7 @@ def main():
         <= 5
     ), "Model Size excedes limit."
 
-    criterion, optimizer, scheduler = get_optimizers(model)
+    criterion, optimizer, scheduler, early_stopper = get_optimizers(model)
 
     train(
         model,
@@ -90,6 +98,7 @@ def main():
         criterion,
         optimizer,
         scheduler,
+        early_stopper,
         DEVICE,
     )
 
@@ -162,6 +171,13 @@ def infer(model, test_loader, criterion, device):
         results.append({"ImageId": idx + 1, "Label": predicted_class})
 
     return pd.DataFrame(results)
+
+
+def load_model():
+    model = MiniResNet(num_blocks=[1, 1, 1, 1])
+    model.load_state_dict(torch.load("./checkpoint/ckpt.pth")["state_dict"])
+    model.eval()
+    return model
 
 
 if __name__ == "__main__":
