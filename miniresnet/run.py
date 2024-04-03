@@ -185,9 +185,9 @@ def infer(model, test_loader, criterion, device):
     return pd.DataFrame(results)
 
 
-def load_model(DEVICE):
+def load_model(path="./checkpoint/ckpt.pth", DEVICE="mps"):
     model = MiniResNet(num_blocks=[1, 1, 1, 1])
-    model.load_state_dict(torch.load("./checkpoint/ckpt.pth")["state_dict"])
+    model.load_state_dict(torch.load(path)["state_dict"])
     model = model.to(DEVICE)
     model.eval()
     return model
