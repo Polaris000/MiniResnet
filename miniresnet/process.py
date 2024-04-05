@@ -85,6 +85,7 @@ def augment_data(input_dim=(3, 32, 32)):
             transforms.RandomCrop(input_dim[1], padding=4),
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+            transforms.Grayscale(num_output_channels=1),
         ]
     )
 
@@ -92,6 +93,7 @@ def augment_data(input_dim=(3, 32, 32)):
         [
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+            transforms.Grayscale(num_output_channels=1),
         ]
     )
     return transform_train, transform_val_test
