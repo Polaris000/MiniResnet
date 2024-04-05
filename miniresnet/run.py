@@ -1,12 +1,15 @@
 import torch
 
-from model import MiniResNet, get_optimizers
+from model import MiniResNet, get_optimizers, MiniResNet_SingleChannel
 from process import load_data
 
 import torchsummary
 import warnings
 
 import pandas as pd
+
+from torch.utils.tensorboard import SummaryWriter
+
 
 import os
 
@@ -21,6 +24,7 @@ def train(
     scheduler,
     early_stopper,
     device,
+    writer,
 ):
     train_loss_history = []
     train_acc_history = []
@@ -52,6 +56,11 @@ def train(
         )
         scheduler.step()
 
+        writer.add_scalar("Loss/train", train_loss, epoch)
+        writer.add_scalar("Loss/test", test_loss, epoch)
+        writer.add_scalar("Accuracy/train", train_acc, epoch)
+        writer.add_scalar("Accuracy/test", test_acc, epoch)
+
         if (epoch % 10 == 0) or early_stopper.early_stop(test_loss):
             state = {
                 "epoch": epoch,
@@ -61,27 +70,24 @@ def train(
             }
             if not os.path.isdir("checkpoint"):
                 os.mkdir("checkpoint")
-                torch.save(state, "./checkpoint/ckpt.pth")
+                torch.save(state, "./checkpoint/ckpt_grayscale.pth")
 
 
 def main():
-    INPUT_DIM = (3, 32, 32)
-    EPOCHS = 30
+    INPUT_DIM = (1, 32, 32)
+    EPOCHS = 20
     DEVICE = "mps"
 
     train_loader, val_loader, test_loader, _ = load_data(INPUT_DIM)
 
-    model = MiniResNet(num_blocks=[1, 1, 1, 1])
+    model = MiniResNet_SingleChannel(num_blocks=[2, 1, 1, 1])
     model = model.to(DEVICE)
 
     if DEVICE == "mps":
         warnings.warn("MPS not supported by torchsummary.")
 
     else:
-        print(
-            torchsummary.summary(model, INPUT_DIM),
-            device=DEVICE,
-        )
+        print(torchsummary.summary(model, INPUT_DIM, device=DEVICE))
 
     assert (
         round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6, 2)
@@ -89,6 +95,8 @@ def main():
     ), "Model Size excedes limit."
 
     criterion, optimizer, scheduler, early_stopper = get_optimizers(model)
+
+    writer = SummaryWriter("runs/example", comment="MiniResNet_SingleChannel")
 
     train(
         model,
@@ -100,7 +108,10 @@ def main():
         scheduler,
         early_stopper,
         DEVICE,
+        writer,
     )
+
+    writer.close()
 
     valid_loss, valid_correct, valid_total = test(model, val_loader, criterion, DEVICE)
 
@@ -112,8 +123,8 @@ def main():
     test_acc = test_correct / test_total
     print(f"Test Accuracy: {test_acc}")
 
-    results = infer(model, test_loader.dataset, criterion, DEVICE)
-    results.to_csv("../data/results/results.csv", index=False)
+    results = infer(model, test_loader, criterion, DEVICE)
+    results.to_csv("../data/results/results_grayscale.csv", index=False)
 
 
 def main_test():
@@ -194,4 +205,4 @@ def load_model(path="./checkpoint/ckpt.pth", DEVICE="mps"):
 
 
 if __name__ == "__main__":
-    main_test()
+    main()
