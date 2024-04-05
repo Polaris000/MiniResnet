@@ -70,7 +70,8 @@ def train(
             }
             if not os.path.isdir("checkpoint"):
                 os.mkdir("checkpoint")
-                torch.save(state, "./checkpoint/ckpt_grayscale.pth")
+
+            torch.save(state, "./checkpoint/ckpt_grayscale.pth")
 
 
 def main():
