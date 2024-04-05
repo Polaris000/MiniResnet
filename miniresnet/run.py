@@ -7,6 +7,7 @@ import torchsummary
 import warnings
 
 import pandas as pd
+from tqdm import tqdm
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -183,12 +184,11 @@ def test(model, test_loader, criterion, device):
 
 
 def infer(model, test_loader, criterion, device):
-    print(len(test_loader))
     model.eval()
 
     results = []
 
-    for _, (id_, image) in enumerate(test_loader):
+    for _, (id_, image) in tqdm(enumerate(test_loader)):
         image = image.to(device)
         output = model(image)
         _, predicted = output.max(1)
