@@ -1,16 +1,25 @@
 import torch
 
-from model import MiniResNet, get_optimizers, MiniResNet_SingleChannel
-from process import load_data
+from model import (
+    MiniResNet,
+    get_optimizers,
+    MiniResNet_SingleChannel,
+    get_optimizers_warmup,
+)
+from process import (
+    load_data,
+    augment_data_auto_config,
+    augment_data_auto_config_normalize,
+)
 
 import torchsummary
-import warnings
+
+import time
 
 import pandas as pd
 from tqdm import tqdm
 
 from torch.utils.tensorboard import SummaryWriter
-
 
 import os
 
@@ -18,6 +27,7 @@ import os
 def train(
     model,
     train_loader,
+    valid_loader,
     test_loader,
     epochs,
     criterion,
@@ -26,84 +36,103 @@ def train(
     early_stopper,
     device,
     writer,
+    experiment,
 ):
     train_loss_history = []
     train_acc_history = []
+    valid_loss_history = []
+    valid_acc_history = []
     test_loss_history = []
     test_acc_history = []
 
     for epoch in range(epochs):
+        start_time = time.time()
+
         train_loss, train_correct, train_total = train_epoch(
             model, train_loader, criterion, optimizer, device
         )
+
+        valid_loss, valid_correct, valid_total = test(
+            model, valid_loader, criterion, device
+        )
+
         test_loss, test_correct, test_total = test(
             model, test_loader, criterion, device
         )
 
         train_loss = train_loss / len(train_loader)
+        valid_loss = valid_loss / len(valid_loader)
         test_loss = test_loss / len(test_loader)
 
         train_acc = train_correct / train_total
+        valid_acc = valid_correct / valid_total
         test_acc = test_correct / test_total
 
         train_loss_history += [train_loss]
+        valid_loss_history += [valid_loss]
         test_loss_history += [test_loss]
 
         train_acc_history.append(train_acc)
+        valid_acc_history.append(valid_acc)
         test_acc_history.append(test_acc)
 
+        end_time = time.time()
+
         print(
-            f"Epoch {epoch + 1}, Train loss {train_loss:.3f}, Test loss {test_loss:.3f}, Train Accuracy: {train_acc:.3f}, Test Accuracy: {test_acc:.3f}"
+            f"Epoch: {epoch + 1}, Train loss: {train_loss:.3f}, Valid loss: {valid_loss:.3f}, Train Acc: {train_acc:.3f}, Valid Acc: {valid_acc:.3f}, Test Acc: {test_acc:.3f}, Time: {(end_time - start_time) / 60:.2f} mins"
         )
         scheduler.step()
 
         writer.add_scalar("Loss/train", train_loss, epoch)
+        writer.add_scalar("Loss/valid", valid_loss, epoch)
         writer.add_scalar("Loss/test", test_loss, epoch)
         writer.add_scalar("Accuracy/train", train_acc, epoch)
+        writer.add_scalar("Accuracy/valid", valid_acc, epoch)
         writer.add_scalar("Accuracy/test", test_acc, epoch)
 
-        if (epoch % 10 == 0) or early_stopper.early_stop(test_loss):
+        if (epoch % 2 == 0) or early_stopper.early_stop(test_loss):
             state = {
                 "epoch": epoch,
                 "state_dict": model.state_dict(),
                 "optimizer_state_dict": optimizer.state_dict(),
+                "scheduler_state_dict": scheduler.state_dict(),
                 "loss": test_loss,
             }
             if not os.path.isdir("checkpoint"):
                 os.mkdir("checkpoint")
 
-            torch.save(state, "./checkpoint/ckpt_grayscale.pth")
+            torch.save(state, f"./checkpoint/ckpt_{experiment}.pth")
 
 
-def main():
-    INPUT_DIM = (1, 32, 32)
-    EPOCHS = 20
+def main(experiment, augment_config, optimizer_config):
+    INPUT_DIM = (3, 32, 32)
+    EPOCHS = 40
     DEVICE = "mps"
 
-    train_loader, val_loader, test_loader, _ = load_data(INPUT_DIM)
+    train_loader, val_loader, test_loader, _, testloader_labeled = load_data(
+        INPUT_DIM, augment_config
+    )
 
-    model = MiniResNet_SingleChannel(num_blocks=[2, 1, 1, 1])
+    model = MiniResNet(num_blocks=[2, 1, 1, 1])
+    model = model.to("cpu")
+    torchsummary.summary(model, INPUT_DIM, device="cpu")
+
     model = model.to(DEVICE)
-
-    if DEVICE == "mps":
-        warnings.warn("MPS not supported by torchsummary.")
-
-    else:
-        print(torchsummary.summary(model, INPUT_DIM, device=DEVICE))
 
     assert (
         round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6, 2)
         <= 5
     ), "Model Size excedes limit."
 
-    criterion, optimizer, scheduler, early_stopper = get_optimizers(model)
+    criterion, optimizer, scheduler, early_stopper = optimizer_config(model)
 
-    writer = SummaryWriter("runs/example", comment="MiniResNet_SingleChannel")
+    writer = SummaryWriter(f"runs/{experiment}")
 
     train(
         model,
         train_loader,
         val_loader,
+        testloader_labeled,
         EPOCHS,
         criterion,
         optimizer,
@@ -111,6 +140,7 @@ def main():
         early_stopper,
         DEVICE,
         writer,
+        experiment,
     )
 
     writer.close()
@@ -120,13 +150,15 @@ def main():
     valid_acc = valid_correct / valid_total
     print(f"Valid Accuracy: {valid_acc}")
 
-    test_loss, test_correct, test_total = test(model, test_loader, criterion, DEVICE)
+    test_loss, test_correct, test_total = test(
+        model, testloader_labeled, criterion, DEVICE
+    )
 
     test_acc = test_correct / test_total
     print(f"Test Accuracy: {test_acc}")
 
-    results = infer(model, test_loader, criterion, DEVICE)
-    results.to_csv("../data/results/results_grayscale.csv", index=False)
+    # results = infer(model, test_loader, criterion, DEVICE)
+    # results.to_csv(f"../data/results/results_{experiment}.csv", index=False)
 
 
 def main_test():
@@ -206,4 +238,26 @@ def load_model(path="./checkpoint/ckpt.pth", DEVICE="mps"):
 
 
 if __name__ == "__main__":
-    main()
+    EXPERIMENT = "auto_augment_cifar_10_40_epochs"
+    augment_config = augment_data_auto_config
+    optimizer_config = get_optimizers
+
+    main(EXPERIMENT, augment_config, get_optimizers)
+
+    EXPERIMENT = "auto_augment_cifar_10_40_epochs_normalize"
+    augment_config = augment_data_auto_config_normalize
+    optimizer_config = get_optimizers
+
+    main(EXPERIMENT, augment_config, get_optimizers)
+
+    EXPERIMENT = "auto_augment_cifar_10_40_epochs_normalize_cosine_warmup"
+    augment_config = augment_data_auto_config_normalize
+    optimizer_config = get_optimizers_warmup
+
+    main(EXPERIMENT, augment_config, get_optimizers_warmup)
+
+    EXPERIMENT = "auto_augment_cifar_10_40_epochs_cosine_warmup"
+    augment_config = augment_data_auto_config
+    optimizer_config = get_optimizers_warmup
+
+    main(EXPERIMENT, augment_config, get_optimizers_warmup)
