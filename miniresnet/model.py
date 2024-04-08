@@ -130,3 +130,14 @@ def get_optimizers(model):
     early_stopper = EarlyStopper(patience=10, min_delta=10)
 
     return criterion, optimizer, scheduler, early_stopper
+
+
+def get_optimizers_warmup(model):
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, T_0=8, T_mult=1, eta_min=0.001
+    )
+    early_stopper = EarlyStopper(patience=10, min_delta=10)
+
+    return criterion, optimizer, scheduler, early_stopper
