@@ -2,9 +2,8 @@ import torch
 
 from model import (
     MiniResNet,
-    get_optimizers,
-    MiniResNet_SingleChannel,
     get_optimizers_warmup,
+    get_optimizers,
 )
 from process import (
     load_data,
@@ -104,16 +103,32 @@ def train(
             torch.save(state, f"./checkpoint/ckpt_{experiment}.pth")
 
 
-def main(experiment, augment_config, optimizer_config):
+def main(experiment, augment_config, optimizer_config, resume=False):
     INPUT_DIM = (3, 32, 32)
     EPOCHS = 40
     DEVICE = "mps"
+
+    print("Running Experiment: ", experiment)
+    print("_" * 20)
+    print("")
 
     train_loader, val_loader, test_loader, _, testloader_labeled = load_data(
         INPUT_DIM, augment_config
     )
 
     model = MiniResNet(num_blocks=[2, 1, 1, 1])
+    criterion, optimizer, scheduler, early_stopper = optimizer_config(model)
+
+    if resume:
+        print("Resuming from checkpoint...")
+        model, _, _ = load_model(
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            path=f"./checkpoint/ckpt_{experiment.removesuffix('_resume')}.pth",
+            device=DEVICE,
+        )
+
     model = model.to("cpu")
     torchsummary.summary(model, INPUT_DIM, device="cpu")
 
@@ -123,8 +138,6 @@ def main(experiment, augment_config, optimizer_config):
         round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6, 2)
         <= 5
     ), "Model Size excedes limit."
-
-    criterion, optimizer, scheduler, early_stopper = optimizer_config(model)
 
     writer = SummaryWriter(f"runs/{experiment}")
 
@@ -160,17 +173,21 @@ def main(experiment, augment_config, optimizer_config):
     # results = infer(model, test_loader, criterion, DEVICE)
     # results.to_csv(f"../data/results/results_{experiment}.csv", index=False)
 
+    print("Experiment complete...")
+    print("-" * 20)
 
-def main_test():
+
+def main_test(experiment, augment_config, optimizer_config, resume=False):
     DEVICE = "mps"
 
-    model = load_model(DEVICE)
-    _, _, test_loader, _ = load_data((3, 32, 32))
-    criterion, _, _, _ = get_optimizers(model)
+    model = MiniResNet(num_blocks=[2, 1, 1, 1])
+    model, _, _ = load_model(path=f"./checkpoint/ckpt_{experiment}.pth", device=DEVICE)
+    _, _, test_loader, _, _ = load_data((3, 32, 32), augment_config)
+    criterion, _, _, _ = optimizer_config(model)
 
     results = infer(model, test_loader, criterion, DEVICE)
 
-    results.to_csv("results.csv", index=False)
+    results.to_csv(f"../data/results/results_{experiment}.csv", index=False)
 
 
 def train_epoch(model, train_loader, criterion, optimizer, device):
@@ -229,12 +246,26 @@ def infer(model, test_loader, criterion, device):
     return pd.DataFrame(results)
 
 
-def load_model(path="./checkpoint/ckpt.pth", DEVICE="mps"):
-    model = MiniResNet(num_blocks=[1, 1, 1, 1])
-    model.load_state_dict(torch.load(path)["state_dict"])
-    model = model.to(DEVICE)
+def load_model(
+    model=MiniResNet(num_blocks=[2, 1, 1, 1]),
+    optimizer=None,
+    scheduler=None,
+    path="./checkpoint/ckpt.pth",
+    device="mps",
+):
+    checkpoint = torch.load(path)
+
+    model.load_state_dict(checkpoint["state_dict"])
+    model = model.to(device)
+
+    if optimizer is not None:
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+
+    if scheduler is not None:
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+
     model.eval()
-    return model
+    return model, optimizer, scheduler
 
 
 if __name__ == "__main__":
@@ -261,3 +292,10 @@ if __name__ == "__main__":
     optimizer_config = get_optimizers_warmup
 
     main(EXPERIMENT, augment_config, get_optimizers_warmup)
+
+    EXPERIMENT = "auto_augment_cifar_10_40_epochs_cosine_warmup_resume"
+    augment_config = augment_data_auto_config
+    optimizer_config = get_optimizers_warmup
+
+    # main(EXPERIMENT, augment_config, get_optimizers_warmup, resume=True)
+    main_test(EXPERIMENT, augment_config, optimizer_config, resume=True)
