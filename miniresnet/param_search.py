@@ -1,9 +1,8 @@
 # https://debuggercafe.com/hyperparameter-tuning-with-pytorch-and-ray-tune/
 
 
-from train_utils import train, validate
 from model import CustomNet
-from datasets import get_data_loaders
+from process import load_data
 from config import (
     MAX_NUM_EPOCHS,
     GRACE_PERIOD,
@@ -25,12 +24,12 @@ import numpy as np
 import torch.optim as optim
 import os
 
-from run import train
+from run import train, test
 
 
 def train_and_validate(config):
     # Get the data loaders.
-    train_loader, valid_loader, dataset_classes = get_data_loaders(
+    train_loader, valid_loader, dataset_classes = load_data(
         IMAGE_SIZE, DATA_ROOT_DIR, VALID_SPLIT, config["batch_size"], NUM_WORKERS
     )
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -46,9 +45,7 @@ def train_and_validate(config):
         train_epoch_loss, train_epoch_acc = train(
             model, train_loader, optimizer, criterion, device
         )
-        valid_epoch_loss, valid_epoch_acc = validate(
-            model, valid_loader, criterion, device
-        )
+        valid_epoch_loss, valid_epoch_acc = test(model, valid_loader, criterion, device)
 
         print(
             f"Training loss: {train_epoch_loss:.3f}, training acc: {train_epoch_acc:.3f}"
