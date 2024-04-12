@@ -4,21 +4,22 @@
 ### About
 
 
-### Setup
-
-
-
-### Experiments
+### Results
 
 | Experiment | Test Acc | Code | Checkpoint |
 |------------|---------|------|------------|
-| Experiment 1 | Result 1 | [Code 1](link_to_code_1) | [Checkpoint 1](link_to_checkpoint_1) |
-| Experiment 2 | Result 2 | [Code 2](link_to_code_2) | [Checkpoint 2](link_to_checkpoint_2) |
-| Experiment 3 | Result 3 | [Code 3](link_to_code_3) | [Checkpoint 3](link_to_checkpoint_2) |
-
-
+| Auto-augment | 0.771 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs.pth) |
+| Auto-augment + Norm | 0.772 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs_normalize.pth) |
+| Auto-augment + Warmup | 0.782  | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs_cosine_warmup.pth) |
+| Auto-augment + Warmup + Retrained | 0.787 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/auto_augment_cifar_10_40_epochs_cosine_warmup_resume.pth) |
 
 ---
+
+
+### Experimental Setup
+
+
+
 
 ### Usage
 
