@@ -297,5 +297,5 @@ if __name__ == "__main__":
     augment_config = augment_data_auto_config
     optimizer_config = get_optimizers_warmup
 
-    # main(EXPERIMENT, augment_config, get_optimizers_warmup, resume=True)
+    main(EXPERIMENT, augment_config, get_optimizers_warmup, resume=True)
     main_test(EXPERIMENT, augment_config, optimizer_config, resume=True)
