@@ -164,8 +164,5 @@ cython_debug/
 data/cifar-10-batches-py/
 data/cifar-10-python.tar.gz
 
-# checkpoints
-miniresnet/checkpoint
-
 # tensorboard logs
 miniresnet/runs
