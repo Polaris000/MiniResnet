@@ -1,0 +1,8 @@
+torch==2.1.2
+torchvision==0.16.2
+torchsummary==1.5.1
+pillow==10.0.0
+pandas==1.5.3
+tqdm==4.66.1
+numpy==1.24.3
+ray==2.10.0
