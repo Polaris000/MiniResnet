@@ -103,6 +103,6 @@ The experiments that are script-based are executed like this:
 
 ---
 ### Files
-- The `/data` path includes all the relevant files for the custom test dataset, our model inferencing results as .csv files, and the .csv files for all of our loss and accuracy curves
+- In `/data` we have all the relevant files for the custom test dataset, our model inferencing results as .csv files, and the .csv files for all of our loss and accuracy curves
 - In `/miniresnet` we have all the main python functions for training the model, loading checkpoints, and preprocessing the data using the data augmentation techniques outlined in our paper
 - In the `/notebooks` path we have the notebooks for all of our experimentation. This includes a search for the number of residual blocks to include per layer (`miniresnet-block-search.ipynb`), the notebook for testing channel reduction (`miniresnet-channels.ipynb`), the notebook for error analysis (`error-analysis.ipynb`), and other notebooks for data augmentation and parameter tuning (`miniresnet-v1 (max pooling).ipynb`/`miniresnet-v1 - updated.ipynb`)
