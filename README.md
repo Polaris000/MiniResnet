@@ -15,7 +15,7 @@ The goal of this project is to explore the implementation of Residual Network (R
 | Auto-augment + Warmup + Retrained | 0.787 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/auto_augment_cifar_10_40_epochs_cosine_warmup_resume.pth) |
 | Sharpness Factor 4.5 | 0.782 | [`miniresnet-sharpness-4-5.ipynb`](notebooks/miniresnet-sharpness-4-5.ipynb) |  |
 | Max Pooling | 0.822 | [`miniresnet-max-pooling.ipynb`](notebooks/miniresnet-max-pooling.ipynb)|  |
-| Channel Reduction  | 0.832 | [`miniresnet-max-pooling.ipynb`](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-channels.ipynb) |  |
+| Channel Reduction  | 0.832 | [`miniresnet-channels.ipynb`](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-channels.ipynb) |  |
 
 ---
 
