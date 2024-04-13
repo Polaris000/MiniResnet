@@ -2,7 +2,7 @@
 
 
 ### About
-
+The goal of this project is to explore the implementation of Residual Network (ResNet) Architectures with fewer than 5 million parameters. Efficient models are an ever-increasing focus of research and industry applications as inferencing on edge devices or other low-resource devices becomes more and more desirable. Using techniques such as data augmentation, hyperparameter tuning, and changes to the design choices of the individual residual layers, we reduce the number of total parameters to less than half of what ResNet-18 has \cite{He2015} while still achieving reasonable performance. Trained on CIFAR-10, we achieve up to 83\% test accuracy on a custom test dataset. 
 
 ### Results
 
@@ -16,11 +16,6 @@
 | Channel Reduction  | 0.832 | [`miniresnet-channels.ipynb`]([miniresnet/run.py](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-channels.ipynb)) |  |
 
 ---
-
-
-### Experimental Setup
-
-
 
 
 ### Usage
@@ -108,3 +103,6 @@ The experiments that are script-based are executed like this:
 
 ---
 ### Files
+- The `/data` path includes all the relevant files for the custom test dataset, our model inferencing results as .csv files, and the .csv files for all of our loss and accuracy curves
+- In `/miniresnet` we have all the main python functions for training the model, loading checkpoints, and preprocessing the data using the data augmentation techniques outlined in our paper
+- In the `/notebooks` path we have the notebooks for all of our experimentation. This includes a search for the number of residual blocks to include per layer (`miniresnet-block-search.ipynb`), the notebook for testing channel reduction (`miniresnet-channels.ipynb`), the notebook for error analysis (`error-analysis.ipynb`), and other notebooks for data augmentation and parameter tuning (`miniresnet-v1 (max pooling).ipynb`/`miniresnet-v1 - updated.ipynb`)
