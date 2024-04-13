@@ -13,8 +13,8 @@ The goal of this project is to explore the implementation of Residual Network (R
 | Auto-augment + Norm | 0.772 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs_normalize.pth) |
 | Auto-augment + Warmup | 0.782  | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs_cosine_warmup.pth) |
 | Auto-augment + Warmup + Retrained | 0.787 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/auto_augment_cifar_10_40_epochs_cosine_warmup_resume.pth) |
-| Sharpness Factor 4.5 | 0.782 | [`miniresnet-sharpness(4.5).ipynb`]([miniresnet/run.py](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/%20miniresnet-sharpness(4.5).ipynb) |  |
-| Max Pooling | 0.822 | [`miniresnet-sharpness(4.5).ipynb`]([miniresnet/run.py](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-max-pooling.ipynb) |  |
+| Sharpness Factor 4.5 | 0.782 | [`miniresnet-sharpness(4.5).ipynb`](notebooks/miniresnet-sharpness(4.5).ipynb) |  |
+| Max Pooling | 0.822 | [`miniresnet-sharpness(4.5).ipynb`](notebooks/miniresnet-max-pooling.ipynb)|  |
 | Channel Reduction  | 0.832 | [`miniresnet-max-pooling.ipynb`]([miniresnet/run.py](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-channels.ipynb)) |  |
 
 ---
