@@ -2,7 +2,7 @@
 
 
 ### About
-The goal of this project is to explore the implementation of Residual Network (ResNet) Architectures with fewer than 5 million parameters. Efficient models are an ever-increasing focus of research and industry applications as inferencing on edge devices or other low-resource devices becomes more and more desirable. Using techniques such as data augmentation, hyperparameter tuning, and changes to the design choices of the individual residual layers, we reduce the number of total parameters to less than half of what ResNet-18 has \cite{He2015} while still achieving reasonable performance. Trained on CIFAR-10, we achieve up to 83\% test accuracy on a custom test dataset. 
+The goal of this project is to explore the implementation of Residual Network (ResNet) Architectures with fewer than 5 million parameters. Efficient models are an ever-increasing focus of research and industry applications as inferencing on edge devices or other low-resource devices becomes more and more desirable. Using techniques such as data augmentation, hyperparameter tuning, and changes to the design choices of the individual residual layers, we reduce the number of total parameters to less than half of what ResNet-18(https://arxiv.org/pdf/1512.03385.pdf) has while still achieving reasonable performance. Trained on CIFAR-10, we achieve up to 83\% test accuracy on a custom test dataset. 
 
 ### Results
 
