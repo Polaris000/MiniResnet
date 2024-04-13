@@ -8,7 +8,7 @@ The goal of this project is to explore the implementation of Residual Network (R
 
 | Experiment | Test Acc | Code | Checkpoint |
 |------------|---------|------|------------|
-| Baseline MiniResNet [1,1,1,1] | 0.751| [`miniresnet-baseline.ipynb`]((https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-baseline.ipynb) |  |
+| Baseline MiniResNet [1,1,1,1] | 0.751| [`miniresnet-baseline.ipynb`](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-baseline.ipynb) |  |
 | Auto-augment | 0.771 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs.pth) |
 | Auto-augment + Norm | 0.772 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs_normalize.pth) |
 | Auto-augment + Warmup | 0.782  | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs_cosine_warmup.pth) |
