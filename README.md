@@ -8,10 +8,12 @@
 
 | Experiment | Test Acc | Code | Checkpoint |
 |------------|---------|------|------------|
+| Baseline MiniResNet [1,1,1,1] | 0.751| [`miniresnet-baseline.ipynb`]([miniresnet/run.p](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-baseline.ipynb)y) |  |
 | Auto-augment | 0.771 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs.pth) |
 | Auto-augment + Norm | 0.772 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs_normalize.pth) |
 | Auto-augment + Warmup | 0.782  | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/ckpt_auto_augment_cifar_10_40_epochs_cosine_warmup.pth) |
 | Auto-augment + Warmup + Retrained | 0.787 | [`run.py`](miniresnet/run.py) | [checkpoint](miniresnet/checkpoint/auto_augment_cifar_10_40_epochs_cosine_warmup_resume.pth) |
+| Channel Reduction  | 0.832 | [`miniresnet-channels.ipynb`]([miniresnet/run.py](https://github.com/Polaris000/MiniResnet/blob/main/notebooks/miniresnet-channels.ipynb)) |  |
 
 ---
 
